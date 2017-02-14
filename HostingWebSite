@@ -1,0 +1,16 @@
+#!/bin/bash
+# $1 = FindingDisribution Script
+# $2 = IP Address
+
+
+#Logging into Remote Server
+echo -e "Logging Into IP Address $2"
+ssh root@$2
+
+distribution="$(./$1)"
+
+if [[ $distribution == "Ubuntu" ]]; then
+	./HostingUbuntu $2
+elif [[ $distribution == "CentOS" ]]; then
+	./HostingCentOS $2
+fi

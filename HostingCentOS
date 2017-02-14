@@ -1,0 +1,96 @@
+#!/bin/bash
+#$1 = IP Address , $2 = Domain Name
+
+
+#Logging into the IP Address
+#echo -e "\nLoggigng into the IP Address $1..\n"
+#ssh root@$1
+
+
+#Updaing Repository
+echo -e "\nUpdating Repository..\n"
+yum update
+
+
+#Installing httpd(Apache) Server
+echo -e "\nInstalling Apache2..\n"
+yum install httpd
+
+
+#Starting httpd(Apache) Service
+echo -e "\nStarting hhtd Service..\n"
+systemctl start httpd.service
+echo -e "\nEnabling Apache to start on boot..\n"
+systemctl enable httpd.service
+
+
+#Adding the user input Domain Name to the /etc/httpd/conf/httpd.conf file 
+#echo -e "\nAdding Domain Name..\n"
+#cat >> /etc/httpd/conf/httpd.conf <<- "EOF"
+
+#ServerName $1
+#EOF 
+
+
+#Downloading and adding the repository, then updating for MySQL Server.
+echo -e "\nDownloading and adding the repository, then updating..\n"
+wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm
+yum update
+
+
+#Installing MySQL Database
+echo -e "\nInstalling MySql Server..\n"
+yum install mysql-server php7-mysql
+mysql_install_db
+
+
+#Starting MySQL Service
+echo -e "\nStarting MySQL Service..\n"
+systemctl start mysqld
+
+
+#Addressing several security concerns in a default MySQL installation
+echo -e "\nAddressing several security concerns in a default MySQL installation..\n"
+sudo_secure_installation
+
+
+#Downloading and adding the repository, then updating for PHP.
+echo -e "\nDownloading and adding the repository, then updating..\n"
+rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+
+
+#Installing PHP
+echo -e "\nInstalling PHP..\n"
+yum install php70w php70w-mysql php70w-mcrypt php70w-mbstring
+
+
+#Creating a Basic WebPage by adding a index.php file in /var/www/html/ folder and adding some content
+echo -e  "\nCreating Your First PHP WebPage..\n"
+cat > /var/www/html/index.php <<- "EOF"
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Broken!</title>
+	</head>
+	<body>
+		<h1>Site Under Construction..!!!</h1>
+			<p>WebPage Created.</p>
+	</body>
+</html>
+EOF
+
+
+#Restarting Server
+echo -e "\nRestarting Server..\n"
+systemctl restart httpd.service
+
+
+#Logging Out from Server
+exit
+
+
+#Opening WebSite
+echo -e "\nOpening WebSite.."
+firefox $1

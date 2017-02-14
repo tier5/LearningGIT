@@ -1,0 +1,99 @@
+#!/bin/bash
+#$1 = IP Address , $2 = Domain Name
+
+
+#Logging into the IP Address
+#echo -e "\nLogging into the IP Address $1..\n"
+#ssh root@$1
+
+#Finding Ubuntu Version
+version = cat /etc/issue.net | cut -f2 -d' ' | cut -f1-2 -d'.'
+
+#Updaing Repository
+echo -e "\nUpdating Repository..\n"
+apt-get update
+
+
+#Installing Apache2 Server
+echo -e "\nInstalling Apache2..\n"
+apt-get install apache2
+
+
+#Adding the user input Domain Name to the /etc/apache2/apache.conf file 
+#echo -e "\nAdding Domain Name..\n"
+#cat >> /etc/apache2/apache.conf <<- "EOF"
+
+#ServerName $1
+#EOF 
+
+
+#Installing MySQL Database
+echo -e "\nInstalling MySql Server..\n"
+apt-get install mysql-server
+
+if [[ "$version" == "14.04" ]]; then
+	apt-get install php5-mysql
+elif [[ "$version" == "16.04" ]]; then
+	apt-get install php7.0-mysql
+fi
+
+
+#Addressing several security concerns in a default MySQL installation
+echo -e "\nAddressing several security concerns in a default MySQL installation..\n"
+if [[ "$version" == "14.04" ]]; then
+	mysql_install_db
+	sudo_secure_installation
+elif [[ "$version" == "16.04" ]]; then
+	mysql_secure_installation
+fi
+
+
+#Installing PHP
+echo -e "\nInstalling PHP..\n"
+if [[ "$version" == "14.04" ]]; then
+	apt-get install php5 libapache2-mod-php5 php5-mcrypt
+elif [[ "$version" == "16.04" ]]; then
+	apt-get install php7.0 libapache2-mod-php7.0 php7.0-mysql php7.0-mcrypt	php7.0-cgi php7.0-cli php7.0-common php7.0-curl 
+fi
+
+
+#Editing the contents of /etc/apache2/mods-enabled/dir.conf file by deleting the original and replacing it with a new one 
+echo -e "\nChanging Preperence to PHP over HTML..\n"
+rm -f /etc/apache2/mods-enabled/dir.conf
+cat >> /etc/apache2/mods-enabled/dir.conf <<- "EOF"
+<IfModule mod_dir.c>
+        DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.htm
+</IfModule>
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+EOF
+
+
+#Creating a Basic WebPage by adding a index.php file in /var/www/html/ folder and adding some content
+echo -e  "\nCreating Your First PHP WebPage..\n"
+cat > /var/www/html/index.php <<- "EOF"
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Broken!</title>
+	</head>
+	<body>
+		<h1>Site Under Construction..!!!</h1>
+			<p>WebPage Created.</p>
+	</body>
+</html>
+EOF
+
+
+#Restarting Server
+echo -e "\nRestarting Server..\n"
+service apache2 restart
+
+
+#Opening WebSite
+echo -e "\nOpening WebSite.."
+firefox $1
+
+
+
+
+
